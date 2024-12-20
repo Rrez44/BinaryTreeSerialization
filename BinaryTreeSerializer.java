@@ -29,6 +29,22 @@ public class BinaryTreeSerializer {
             throw new RuntimeException("No SHA-256 algorithm available");
         }
     }
+
+    public static String serialize(Node root) {
+        StringBuilder sb = new StringBuilder();
+        serializeHelper(root, sb);
+        return sb.toString().trim();
+    }
+
+    private static void serializeHelper(Node node, StringBuilder sb) {
+        if (node == null) {
+            sb.append("null ");
+            return;
+        }
+        sb.append(node.value).append(":").append(node.checksum).append(" ");
+        serializeHelper(node.left, sb);
+        serializeHelper(node.right, sb);
+    }
   /**
      * Prints the tree in an ASCII diagram form (rotated):
      *
