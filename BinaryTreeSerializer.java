@@ -45,6 +45,51 @@ public class BinaryTreeSerializer {
         serializeHelper(node.left, sb);
         serializeHelper(node.right, sb);
     }
+
+    public static Node deserialize(String data) {
+        if (data == null || data.trim().isEmpty()) {
+            return null;
+        }
+        String[] tokens = data.trim().split("\\s+");
+        Queue<String> queue = new LinkedList<>(Arrays.asList(tokens));
+        return deserializeHelper(queue);
+    }
+
+    private static Node deserializeHelper(Queue<String> queue) {
+        if (queue.isEmpty()) {
+            throw new IllegalArgumentException("Invalid serialized data: unexpected end");
+        }
+
+        String token = queue.poll();
+        if ("null".equals(token)) {
+            return null;
+        }
+
+        String[] parts = token.split(":");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid node format: " + token);
+        }
+
+        String valStr = parts[0];
+        String chkStr = parts[1];
+        int value;
+        try {
+            value = Integer.parseInt(valStr);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid node value: " + valStr);
+        }
+
+        String expected = computeChecksum(value);
+        if (!expected.equals(chkStr)) {
+            throw new IllegalArgumentException("Checksum mismatch for value " + value +
+                    ". Expected " + chkStr + ", got " + expected);
+        }
+
+        Node node = new Node(value, chkStr);
+        node.left = deserializeHelper(queue);
+        node.right = deserializeHelper(queue);
+        return node;
+    }
   /**
      * Prints the tree in an ASCII diagram form (rotated):
      *
