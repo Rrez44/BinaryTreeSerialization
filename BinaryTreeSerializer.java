@@ -29,5 +29,105 @@ public class BinaryTreeSerializer {
             throw new RuntimeException("No SHA-256 algorithm available");
         }
     }
+  /**
+     * Prints the tree in an ASCII diagram form (rotated):
+     *
+     *         10
+     *       /    \
+     *      5      15
+     *     / \
+     *    2   7
+     */
+    public static void printTreeAscii(Node root) {
+        if (root == null) {
+            System.out.println("(empty)");
+            return;
+        }
+        printAsciiHelper(root, "", true);
+    }
 
+    private static void printAsciiHelper(Node node, String prefix, boolean isTail) {
+        if (node.right != null) {
+            printAsciiHelper(node.right, prefix + (isTail ? "│   " : "    "), false);
+        }
+
+        System.out.println(prefix + (isTail ? "└── " : "┌── ") + node.value);
+
+        if (node.left != null) {
+            printAsciiHelper(node.left, prefix + (isTail ? "    " : "│   "), true);
+        }
+    }
+
+    // Example usage
+    public static void main(String[] args) {
+        // Example 1: A small, balanced tree
+        //        10
+        //       /  \
+        //      5    15
+        //     / \
+        //    2   7
+        Node root = new Node(10, computeChecksum(10));
+        root.left = new Node(5, computeChecksum(5));
+        root.right = new Node(15, computeChecksum(15));
+        root.left.left = new Node(2, computeChecksum(2));
+        root.left.right = new Node(7, computeChecksum(7));
+
+        String serialized = serialize(root);
+        System.out.println("Serialized Tree 1: " + serialized);
+        Node deserializedRoot = deserialize(serialized);
+        System.out.println("Deserialized Tree 1 (ASCII diagram):");
+        printTreeAscii(deserializedRoot);
+
+        // Tamper with data to test integrity
+        String tampered = serialized.replace("5:", "50:");
+        try {
+            deserialize(tampered);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Integrity check failed as expected: " + e.getMessage());
+        }
+
+        // Example 2: A single-node tree
+        Node single = new Node(42, computeChecksum(42));
+        String singleSerialized = serialize(single);
+        System.out.println("\nSerialized Single-Node Tree: " + singleSerialized);
+        Node singleDeserialized = deserialize(singleSerialized);
+        System.out.println("Deserialized Single-Node Tree (ASCII diagram):");
+        printTreeAscii(singleDeserialized);
+
+        // Example 3: A tree with only left children
+        //    10
+        //   /
+        //  9
+        // /
+        //8
+        Node leftChain = new Node(10, computeChecksum(10));
+        leftChain.left = new Node(9, computeChecksum(9));
+        leftChain.left.left = new Node(8, computeChecksum(8));
+
+        String leftChainSerialized = serialize(leftChain);
+        System.out.println("\nSerialized Left-Chain Tree: " + leftChainSerialized);
+        Node leftChainDeserialized = deserialize(leftChainSerialized);
+        System.out.println("Deserialized Left-Chain Tree (ASCII diagram):");
+        printTreeAscii(leftChainDeserialized);
+
+        // Example 4: A more complete tree
+        //         20
+        //        /  \
+        //      10    30
+        //     /  \   / \
+        //    5   15 25 35
+        Node completeRoot = new Node(20, computeChecksum(20));
+        completeRoot.left = new Node(10, computeChecksum(10));
+        completeRoot.right = new Node(30, computeChecksum(30));
+        completeRoot.left.left = new Node(5, computeChecksum(5));
+        completeRoot.left.right = new Node(15, computeChecksum(15));
+        completeRoot.right.left = new Node(25, computeChecksum(25));
+        completeRoot.right.right = new Node(35, computeChecksum(35));
+
+        String completeSerialized = serialize(completeRoot);
+        System.out.println("\nSerialized More Complete Tree: " + completeSerialized);
+        Node completeDeserialized = deserialize(completeSerialized);
+        System.out.println("Deserialized More Complete Tree (ASCII diagram):");
+        printTreeAscii(completeDeserialized);
+    }
 }
